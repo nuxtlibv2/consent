@@ -69,7 +69,6 @@ export function useConsent(): UseConsentReturn {
 
     decided.value = true
 
-
     // No update if nothing changed (prevents infinite loops with watchers)
     if (
       next.analytics === current.analytics
