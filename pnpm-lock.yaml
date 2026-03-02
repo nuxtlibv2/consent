@@ -60,6 +60,9 @@ importers:
 
   playground:
     dependencies:
+      '@nuxt/scripts':
+        specifier: 0.13.2
+        version: 0.13.2(@unhead/vue@2.1.9(vue@3.5.29(typescript@5.9.3)))(db0@0.3.4)(ioredis@5.9.3)(magicast@0.5.2)(typescript@5.9.3)(vue@3.5.29(typescript@5.9.3))
       '@nuxtlib/consent':
         specifier: workspace:*
         version: link:..
