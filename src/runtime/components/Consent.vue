@@ -2,11 +2,13 @@
 import { ref, computed, watch } from "vue";
 import { useConsent } from "../composables/useConsent";
 import { useIsRealUser } from "../composables/useIsRealUser";
-const consentModalRef = ref<{ syncFromCookies: () => void } | null>(null);
 const { isRealUser } = useIsRealUser();
 const { decided } = useConsent();
-const show = ref(false);
 
+const consentModalRef = ref<{ syncFromCookies: () => void } | null>(null);
+
+
+const show = ref(false);
 const toggleConsentVisibility = () => {
   show.value = !show.value;
 };
@@ -28,5 +30,9 @@ defineExpose({
 </script>
 
 <template>
-  <LazyConsentModal ref="consentModalRef" v-if="showBanner" />
+  <LazyConsentModal
+    ref="consentModalRef"
+    v-if="showBanner"
+    @decision-has-been-made="show = false"
+  />
 </template>
