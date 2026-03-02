@@ -30,9 +30,9 @@ export default defineNuxtModule<ModuleOptions>({
 
     const publicConfig = _nuxt.options.runtimeConfig.public as PublicRuntimeConfig
     publicConfig.consent = {
-      cookiePrefix: _options.cookiePrefix,
-      cookieSecure: _options.cookieSecure,
-      cookieMaxAge: _options.cookieMaxAge,
+      cookiePrefix: _options.cookiePrefix || 'default_cookie_prefix', // Default prefix if not provided
+      cookieSecure: _options.cookieSecure || true, // Default to true if not provided
+      cookieMaxAge: _options.cookieMaxAge || 60 * 60 * 24 * 365, // Default to 1 year if not provided
     }
 
     // Google Analytics plugin (client-only)

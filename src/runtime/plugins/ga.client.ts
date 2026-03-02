@@ -1,6 +1,7 @@
 // plugins/ga.client.js
 
 import { defineNuxtPlugin, useScriptGoogleAnalytics, watch } from '#imports'
+import type { Plugin } from 'nuxt/app'
 import { useConsent, type ConsentOptions } from '../composables/useConsent'
 
 export default defineNuxtPlugin(() => {
@@ -41,4 +42,4 @@ export default defineNuxtPlugin(() => {
       }
     }, { deep: true, immediate: true })
   })
-})
+}) as Plugin

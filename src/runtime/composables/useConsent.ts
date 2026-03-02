@@ -1,5 +1,6 @@
 // ~/composables/useConsent.ts
 
+import type { CookieRef } from '#app'
 import { useCookie, useRuntimeConfig } from '#imports'
 
 export type ConsentOptions = {
@@ -13,7 +14,15 @@ export type ConsentOptions = {
   functional: boolean
 }
 
-export function useConsent() {
+export interface UseConsentReturn {
+  consent: CookieRef<ConsentOptions>
+  decided: CookieRef<boolean>
+  setConsent: (patch: Partial<ConsentOptions>) => void
+  acceptAll: () => void
+  declineAll: () => void
+}
+
+export function useConsent(): UseConsentReturn {
   const config = useRuntimeConfig()
   const prefix = config.public.consent.cookiePrefix
   const secure = config.public.consent.cookieSecure // Trusting defautls from module options, idk if I should
@@ -58,6 +67,9 @@ export function useConsent() {
       functional: typeof patch.functional === 'boolean' ? patch.functional : current.functional,
     }
 
+    decided.value = true
+
+
     // No update if nothing changed (prevents infinite loops with watchers)
     if (
       next.analytics === current.analytics
@@ -67,7 +79,6 @@ export function useConsent() {
     ) return
 
     consent.value = next
-    decided.value = true
   }
 
   function setAll(state: boolean) {
