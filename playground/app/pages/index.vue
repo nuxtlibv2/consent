@@ -22,6 +22,6 @@ const { isRealUser } = useIsRealUser()
     >
       Cookie settings
     </button>
-    <Consent ref="consentRef" />
+    <CookiesConsent ref="consentRef" />
   </main>
 </template>

@@ -75,8 +75,14 @@ export function useConsent() {
       analytics: state, ads: state, personalization: state, functional: state,
     })
   }
-  function acceptAll() { setAll(true); decided.value = true }
-  function declineAll() { setAll(false); decided.value = true }
+  function acceptAll() {
+    setAll(true)
+    decided.value = true
+  }
+  function declineAll() {
+    setAll(false)
+    decided.value = true
+  }
 
   return {
     // state

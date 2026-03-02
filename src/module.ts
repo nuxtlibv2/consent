@@ -61,8 +61,8 @@ export default defineNuxtModule<ModuleOptions>({
     })
 
     addComponent({
-      name: 'Consent',
-      filePath: resolver.resolve('./runtime/components/Consent.vue'),
+      name: 'CookiesConsent',
+      filePath: resolver.resolve('./runtime/components/CookiesConsent.vue'),
     })
   },
 })

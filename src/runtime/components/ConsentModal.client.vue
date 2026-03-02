@@ -4,7 +4,7 @@ import BaseSwitch from './BaseSwitch.vue'
 import { ref, reactive } from 'vue'
 
 // store
-const { consent, acceptAll, declineAll, setConsent } = useConsent()
+const { consent, acceptAll, setConsent } = useConsent()
 
 const advanced = ref(false)
 

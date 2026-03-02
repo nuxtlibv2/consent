@@ -4,17 +4,20 @@ import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 // Run `npx @eslint/config-inspector` to inspect the resolved config interactively
 export default createConfigForNuxt({
   features: {
-    // Rules for module authors
     tooling: true,
-    // Rules for formatting
     stylistic: true,
   },
   dirs: {
-    src: [
-      './playground',
-    ],
+    src: ['./playground'],
   },
-})
-  .append(
-    // your custom flat config here...
-  )
+}).append(
+  // ✅ Nuxt pages are often single-word (index, contact, test) — disable rule only there
+  {
+    files: ['playground/app/pages/**/*.vue'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
+    },
+  },
+
+  // ...your other custom flat config items
+)
