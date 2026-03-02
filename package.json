@@ -1,15 +1,34 @@
 {
-  "name": "consent",
+  "name": "@nuxtlib/consent",
   "version": "1.0.0",
-  "description": "My new Nuxt module",
-  "repository": "your-org/my-module",
+  "description": "Nuxt cookie consent module with composable, banner, and provider sync helpers",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxtlibv2/consent.git"
+  },
+  "homepage": "https://github.com/nuxtlibv2/consent#readme",
+  "bugs": {
+    "url": "https://github.com/nuxtlibv2/consent/issues"
+  },
+  "keywords": [
+    "nuxt",
+    "nuxt-module",
+    "cookie-consent",
+    "consent",
+    "gdpr",
+    "privacy"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/types.d.mts",
       "import": "./dist/module.mjs"
-    }
+    },
+    "./tailwind": "./dist/runtime/tailwind.css"
   },
   "main": "./dist/module.mjs",
   "typesVersions": {
@@ -39,11 +58,17 @@
   "dependencies": {
     "@nuxt/kit": "^4.3.1"
   },
+  "peerDependencies": {
+    "@nuxt/scripts": ">=0.12.0",
+    "tailwindcss": "^4",
+    "@tailwindcss/vite": "^4"
+  },
   "devDependencies": {
     "@nuxt/devtools": "^3.2.1",
     "@nuxt/eslint-config": "^1.15.1",
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/schema": "^4.3.1",
+    "@nuxt/scripts": ">=0.12.0",
     "@nuxt/test-utils": "^4.0.0",
     "@types/node": "latest",
     "changelogen": "^0.6.2",
