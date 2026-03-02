@@ -1,38 +1,38 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import { useConsent } from "../composables/useConsent";
-import { useIsRealUser } from "../composables/useIsRealUser";
-const { isRealUser } = useIsRealUser();
-const { decided } = useConsent();
+import { ref, computed, watch } from 'vue'
+import { useConsent } from '../composables/useConsent'
+import { useIsRealUser } from '../composables/useIsRealUser'
 
-const consentModalRef = ref<{ syncFromCookies: () => void } | null>(null);
+const { isRealUser } = useIsRealUser()
+const { decided } = useConsent()
 
+const consentModalRef = ref<{ syncFromCookies: () => void } | null>(null)
 
-const show = ref(false);
+const show = ref(false)
 const toggleConsentVisibility = () => {
-  show.value = !show.value;
-};
+  show.value = !show.value
+}
 
 const showBanner = computed<boolean>(
-  () => isRealUser.value && (!decided.value || show.value)
-);
+  () => isRealUser.value && (!decided.value || show.value),
+)
 
 watch(showBanner, (val) => {
   if (val == true) {
     // sync cookies
-    consentModalRef.value?.syncFromCookies();
+    consentModalRef.value?.syncFromCookies()
   }
-});
+})
 
 defineExpose({
   toggleConsentVisibility,
-});
+})
 </script>
 
 <template>
   <LazyConsentModal
-    ref="consentModalRef"
     v-if="showBanner"
+    ref="consentModalRef"
     @decision-has-been-made="show = false"
   />
 </template>

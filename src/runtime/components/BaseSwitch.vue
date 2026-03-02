@@ -1,6 +1,5 @@
 <!-- components/BaseSwitch.vue -->
 <template>
-
   <button
     type="button"
     role="switch"
@@ -20,8 +19,8 @@
 
 <script setup lang="ts">
 function toggleModel() {
-  model.value = model.value !== true;
+  model.value = model.value !== true
 }
 
-const model = defineModel<boolean>({ default: false });
+const model = defineModel<boolean>({ default: false })
 </script>

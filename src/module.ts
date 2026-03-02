@@ -38,7 +38,7 @@ export default defineNuxtModule<ModuleOptions>({
     // Google Analytics plugin (client-only)
     addPlugin(resolver.resolve('./runtime/plugins/ga.client'))
 
-    // Consent composable 
+    // Consent composable
     addImports({
       name: 'useConsent',
       from: resolver.resolve('./runtime/composables/useConsent'),
@@ -64,11 +64,5 @@ export default defineNuxtModule<ModuleOptions>({
       name: 'Consent',
       filePath: resolver.resolve('./runtime/components/Consent.vue'),
     })
-
-
-
-
-
-
   },
 })

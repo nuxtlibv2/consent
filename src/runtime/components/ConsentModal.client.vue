@@ -1,20 +1,19 @@
 <script setup lang="ts">
-import { useConsent, type ConsentOptions } from '../composables/useConsent';
-import BaseSwitch from './BaseSwitch.vue';
+import { useConsent, type ConsentOptions } from '../composables/useConsent'
+import BaseSwitch from './BaseSwitch.vue'
 import { ref, reactive } from 'vue'
 
 // store
-const { consent, acceptAll, declineAll, setConsent } = useConsent();
+const { consent, acceptAll, declineAll, setConsent } = useConsent()
 
-const advanced = ref(false);
-
+const advanced = ref(false)
 
 // Just to make sure the local copy is in sync with cookies when the modal is opened, in case they were changed outside of this component (e.g. another tab)
 function syncFromCookies() {
-  local.analytics = consent.value.analytics;
-  local.ads = consent.value.ads;
-  local.personalization = consent.value.personalization;
-  local.functional = consent.value.functional;
+  local.analytics = consent.value.analytics
+  local.ads = consent.value.ads
+  local.personalization = consent.value.personalization
+  local.functional = consent.value.functional
 }
 
 // local editable copy for the <details> panel
@@ -23,14 +22,13 @@ const local = reactive<ConsentOptions>({
   ads: consent.value.ads,
   personalization: consent.value.personalization,
   functional: consent.value.functional,
-});
-
+})
 
 defineExpose({
-  syncFromCookies
-});
+  syncFromCookies,
+})
 
-const emit = defineEmits(['decisionHasBeenMade']);
+const emit = defineEmits(['decisionHasBeenMade'])
 </script>
 
 <template>
@@ -45,10 +43,18 @@ const emit = defineEmits(['decisionHasBeenMade']);
     tabindex="-1"
   >
     <div class="flex gap-2 items-center">
-      <p id="cookie-dialog-title" class="font-semibold text-2xl">We use cookies</p>
+      <p
+        id="cookie-dialog-title"
+        class="font-semibold text-2xl"
+      >
+        We use cookies
+      </p>
     </div>
 
-    <p id="cookie-dialog-desc" class="mt-2">
+    <p
+      id="cookie-dialog-desc"
+      class="mt-2"
+    >
       We use cookies and similar technologies to run the site, measure usage, and (with
       your permission) personalize content and advertising.
     </p>
@@ -62,14 +68,22 @@ const emit = defineEmits(['decisionHasBeenMade']);
       leave-from-class="opacity-100 max-h-[1000px]"
     >
       <!-- sliding panel -->
-      <div v-show="advanced" class="mt-4 border-t pt-4">
+      <div
+        v-show="advanced"
+        class="mt-4 border-t pt-4"
+      >
         <!-- Analytics -->
         <div class="mt-4">
           <div class="flex items-center justify-between gap-4">
-            <label id="analytics-label" class="md:text-xl" for="analytics"
-              >Analytics</label
-            >
-            <BaseSwitch v-model="local.analytics" aria-labelledby="analytics-label" />
+            <label
+              id="analytics-label"
+              class="md:text-xl"
+              for="analytics"
+            >Analytics</label>
+            <BaseSwitch
+              v-model="local.analytics"
+              aria-labelledby="analytics-label"
+            />
           </div>
           <p class="text-sm md:text-base mt-2">
             Measures page views, clicks and basic device info so we can debug, plan
@@ -81,8 +95,15 @@ const emit = defineEmits(['decisionHasBeenMade']);
         <!-- Ads / Marketing -->
         <div class="mt-4">
           <div class="flex items-center justify-between gap-4">
-            <label id="ads-label" class="md:text-xl" for="ads">Ads / Marketing</label>
-            <BaseSwitch v-model="local.ads" aria-labelledby="ads-label" />
+            <label
+              id="ads-label"
+              class="md:text-xl"
+              for="ads"
+            >Ads / Marketing</label>
+            <BaseSwitch
+              v-model="local.ads"
+              aria-labelledby="ads-label"
+            />
           </div>
           <p class="text-sm md:text-base mt-2">
             Enables advertising and conversion measurement. Ad partners may store
@@ -93,9 +114,11 @@ const emit = defineEmits(['decisionHasBeenMade']);
         <!-- Personalization -->
         <div class="mt-4">
           <div class="flex items-center justify-between gap-4">
-            <label id="personalization-label" class="md:text-xl" for="personalization"
-              >Personalization</label
-            >
+            <label
+              id="personalization-label"
+              class="md:text-xl"
+              for="personalization"
+            >Personalization</label>
             <BaseSwitch
               v-model="local.personalization"
               aria-labelledby="personalization-label"
@@ -111,10 +134,15 @@ const emit = defineEmits(['decisionHasBeenMade']);
         <!-- Functional -->
         <div class="mt-4">
           <div class="flex items-center justify-between gap-4">
-            <label id="functional-label" class="md:text-xl" for="functional"
-              >Functional (preferences)</label
-            >
-            <BaseSwitch v-model="local.functional" aria-labelledby="functional-label" />
+            <label
+              id="functional-label"
+              class="md:text-xl"
+              for="functional"
+            >Functional (preferences)</label>
+            <BaseSwitch
+              v-model="local.functional"
+              aria-labelledby="functional-label"
+            />
           </div>
           <p class="text-sm md:text-base mt-2">
             Stores settings that make the site easier to use, such as remembering forms or
