@@ -5,7 +5,7 @@ For Nuxt teams that want consent UX without hurting performance, this how-to get
 This module is optimized to stay lightweight in real apps:
 
 - Consent UI is shown only for real users after interaction signals (click, touch, key, scroll, pointer movement threshold).
-- The dialog is lazy-rendered through `<Consent />`, so modal UI is not eagerly mounted for bots/crawlers or non-interactive traffic.
+- The dialog is lazy-rendered through `<CookieConsent />`, so modal UI is not eagerly mounted for bots/crawlers or non-interactive traffic.
 - Interaction listeners are cleaned up after the user is confirmed as real, avoiding long-lived event overhead.
 
 Search terms: `nuxt cookie consent`, `gdpr banner nuxt`, `google consent mode`, `nuxt scripts consent`, `tailwind v4 nuxt module`.
