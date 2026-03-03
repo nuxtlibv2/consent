@@ -67,7 +67,7 @@ const consentRef = ref<{ toggleConsentVisibility: () => void } | null>(null)
 
 <template>
   <button @click="consentRef?.toggleConsentVisibility()">Cookie settings</button>
-  <Consent ref="consentRef" />
+  <CookieConsent ref="consentRef" />
 </template>
 ```
 
