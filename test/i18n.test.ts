@@ -64,6 +64,7 @@ function toTranslationMap(messages: ConsentMessages): Record<string, string> {
     'nuxtlibConsent.categories.functional.label': messages.categories.functional.label,
     'nuxtlibConsent.categories.functional.description': messages.categories.functional.description,
     'nuxtlibConsent.buttons.acceptAll': messages.buttons.acceptAll,
+    'nuxtlibConsent.buttons.declineAll': messages.buttons.declineAll,
     'nuxtlibConsent.buttons.customize': messages.buttons.customize,
     'nuxtlibConsent.buttons.hideSettings': messages.buttons.hideSettings,
     'nuxtlibConsent.buttons.save': messages.buttons.save,

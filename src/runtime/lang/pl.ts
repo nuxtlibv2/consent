@@ -22,6 +22,7 @@ export default {
     },
     buttons: {
       acceptAll: 'Akceptuj wszystkie',
+      declineAll: 'Odrzuć wszystkie',
       customize: 'Dostosuj',
       hideSettings: 'Ukryj ustawienia',
       save: 'Zapisz ustawienia',

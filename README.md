@@ -99,7 +99,18 @@ If you want provider sync, see [Supported Integrations](#supported-integrations)
 
 Mount this once near the app root. The component exposes:
 
+- `showDeclineButton`: shows a "decline all" action button when `true`
+- `enableBackground`: adds a dark blurred backdrop behind the modal when `true`
 - `toggleConsentVisibility()` to manually reopen or close the consent modal.
+
+Example:
+
+```vue
+<CookiesConsent
+  :show-decline-button="true"
+  :enable-background="true"
+/>
+```
 
 ### `useConsent()`
 

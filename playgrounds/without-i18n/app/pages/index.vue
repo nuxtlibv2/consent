@@ -239,6 +239,10 @@ function applyAnalyticsPreset() {
       </section>
     </div>
 
-    <CookiesConsent ref="consentRef" />
+    <CookiesConsent
+      ref="consentRef"
+      :show-decline-button="true"
+      :enable-background="true"
+    />
   </main>
 </template>

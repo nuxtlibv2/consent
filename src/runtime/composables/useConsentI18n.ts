@@ -75,6 +75,7 @@ export function useConsentI18n() {
       },
       buttons: {
         acceptAll: t('nuxtlibConsent.buttons.acceptAll'),
+        declineAll: t('nuxtlibConsent.buttons.declineAll'),
         customize: t('nuxtlibConsent.buttons.customize'),
         hideSettings: t('nuxtlibConsent.buttons.hideSettings'),
         save: t('nuxtlibConsent.buttons.save'),

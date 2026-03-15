@@ -3,6 +3,14 @@ import { ref, computed, watch } from 'vue'
 import { useConsent } from '../composables/useConsent'
 import { useIsRealUser } from '../composables/useIsRealUser'
 
+const props = withDefaults(defineProps<{
+  showDeclineButton?: boolean
+  enableBackground?: boolean
+}>(), {
+  showDeclineButton: false,
+  enableBackground: false,
+})
+
 const { isRealUser } = useIsRealUser()
 const { decided } = useConsent()
 
@@ -33,6 +41,8 @@ defineExpose({
   <LazyConsentModal
     v-if="showBanner"
     ref="consentModalRef"
+    :show-decline-button="props.showDeclineButton"
+    :enable-background="props.enableBackground"
     @decision-has-been-made="show = false"
   />
 </template>
