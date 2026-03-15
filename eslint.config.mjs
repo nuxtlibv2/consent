@@ -8,16 +8,19 @@ export default createConfigForNuxt({
     stylistic: true,
   },
   dirs: {
-    src: ['./playground'],
+    src: ['./playgrounds'],
   },
 }).append(
-  // ✅ Nuxt pages are often single-word (index, contact, test) — disable rule only there
   {
-    files: ['playground/app/pages/**/*.vue'],
+    ignores: [
+    ],
+  },
+
+  // Nuxt page files such as `index.vue` are intentionally single-word.
+  {
+    files: ['playgrounds/**/app/pages/**/*.vue'],
     rules: {
       'vue/multi-word-component-names': 'off',
     },
   },
-
-  // ...your other custom flat config items
 )

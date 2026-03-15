@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "my-module-playground",
+  "name": "my-module-playground-with-i18n",
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@nuxt/scripts": "0.13.2",
+    "@nuxtjs/i18n": "^10.2.3",
     "@nuxtlib/consent": "workspace:*",
     "nuxt": "^4.3.1"
   },

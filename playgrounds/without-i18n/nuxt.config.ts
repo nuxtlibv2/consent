@@ -6,14 +6,14 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   compatibilityDate: 'latest',
   vite: {
-    plugins: [
-      tailwindcss(),
-    ],
+    // Tailwind's Vite plugin types do not align with Nuxt's in this workspace.
+    plugins: tailwindcss() as never,
   },
   nuxtlibConsent: {
     cookiePrefix: 'myapp_consent',
     cookieSecure: false,
     cookieMaxAge: 60 * 60 * 24 * 365, // 1 year
+    locale: 'pl',
   },
   scripts: {
     registry: {

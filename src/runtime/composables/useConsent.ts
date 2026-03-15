@@ -24,9 +24,9 @@ export interface UseConsentReturn {
 
 export function useConsent(): UseConsentReturn {
   const config = useRuntimeConfig()
-  const prefix = config.public.consent.cookiePrefix
-  const secure = config.public.consent.cookieSecure // Trusting defautls from module options, idk if I should
-  const maxAge = config.public.consent.cookieMaxAge // Trusting defautls from module options, idk if I should
+  const prefix = config.public.nuxtlibConsent.cookiePrefix
+  const secure = config.public.nuxtlibConsent.cookieSecure // Trusting defautls from module options, idk if I should
+  const maxAge = config.public.nuxtlibConsent.cookieMaxAge // Trusting defautls from module options, idk if I should
 
   const cookieOptions = {
     sameSite: 'lax' as const,

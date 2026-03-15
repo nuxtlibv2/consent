@@ -1,6 +1,11 @@
 # @nuxtlib/consent
 
-For Nuxt teams that want consent UX without hurting performance, this how-to gets you to a real-user-gated banner, persisted consent cookies, and Google Analytics consent updates.
+For Nuxt teams that want free consent banner:
+- Optimized for performance
+- That only shows for real users after interaction signals
+- That persists consent cookies
+- With optional Nuxt i18n integration
+- With Google Analytics consent updates
 
 This module is optimized to stay lightweight in real apps:
 
@@ -13,11 +18,14 @@ Search terms: `nuxt cookie consent`, `gdpr banner nuxt`, `google consent mode`, 
 ## Navigation
 
 - [Quickstart](#quickstart)
+- [Public API](#public-api)
+- [Localization](#localization)
 - [How to Configure Google Analytics](#how-to-configure-google-analytics)
 - [Testing](#testing)
 - [Project Customization Map](#project-customization-map)
 - [Troubleshooting](#troubleshooting)
 - [Roadmap](#roadmap)
+- [Usage Cases](#usage-cases)
 
 ## Quickstart
 
@@ -54,6 +62,8 @@ export default defineNuxtConfig({
     cookiePrefix: 'myapp_name', // cookie key namespace
     cookieSecure: true, // OPTIONAL, default true, set to false when you want to test on localhost
     cookieMaxAge: 60 * 60 * 24 * 365, // OPTIONAL - default 1 year, in seconds
+    locale: 'pl', // used only when the app does not use Nuxt i18n - defaults to 'en'
+
   },
 })
 ```
@@ -66,24 +76,148 @@ const consentRef = ref<{ toggleConsentVisibility: () => void } | null>(null)
 </script>
 
 <template>
-  <button @click="consentRef?.toggleConsentVisibility()">Cookie settings</button>
+  <button @click="consentRef?.toggleConsentVisibility()">
+    Cookie settings
+  </button>
+
   <CookiesConsent ref="consentRef" />
 </template>
 ```
 
-Run:
 
-```bash
-npm run dev
+What you should see:
+
+- The modal appears only after a real-user interaction such as click, touch, key press, scroll, wheel, or meaningful pointer movement.
+- Consent state is stored in `<prefix>_decided` and `<prefix>_consent`.
+- Google Analytics consent starts as denied and is updated from the saved consent state.
+
+Use `cookieSecure: false` only for local HTTP testing. Keep `cookieSecure: true` in production HTTPS.
+
+
+## Public API
+
+### `<CookiesConsent />`
+
+Mount this once near the app root. The component exposes:
+
+- `toggleConsentVisibility()` to manually reopen or close the consent modal.
+
+### `useConsent()`
+
+Auto-imported composable for consent state and actions:
+
+- `consent`: cookie-backed category state
+- `decided`: cookie-backed first-decision flag
+- `setConsent(patch)`: partial update for one or more categories
+- `acceptAll()`: enables all categories
+- `declineAll()`: disables all categories
+
+Current consent categories:
+
+- `analytics`
+- `ads`
+- `personalization`
+- `functional`
+
+### `useIsRealUser(options?)`
+
+Auto-imported composable that confirms real interaction before the consent UI is shown automatically.
+
+Current option:
+
+- `movementThresholdPx` with a default of `8`
+
+## Localization
+
+Built-in locales:
+
+- `en`
+- `de`
+- `pl`
+
+Without `@nuxtjs/i18n`, the module uses `nuxtlibConsent.locale` and falls back to `en`.
+
+```ts
+export default defineNuxtConfig({
+  nuxtlibConsent: {
+    locale: 'pl',
+  },
+})
 ```
 
-Expected result:
+With `@nuxtjs/i18n`, the module registers its bundled `en`, `de`, and `pl` translations through the `i18n:registerModule` hook and resolves consent copy from the `nuxtlibConsent` namespace in your app i18n instance.
 
-- Consent state is stored in `<prefix>_decided` and `<prefix>_consent` cookies.
-- Banner appears only after real-user interaction.
-- GA consent is sent as `default: denied`, then updated from consent state.
+```ts
+export default defineNuxtConfig({
+  modules: ['@nuxtjs/i18n', '@nuxtlib/consent'],
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'de', 'pl'],
+  },
+  nuxtlibConsent: {
+    locale: 'en', // fallback only when the app does not use Nuxt i18n
+  },
+})
+```
 
-Use `cookieSecure: false` only for local HTTP testing. Set `cookieSecure: true` in production HTTPS.
+App i18n always wins over `nuxtlibConsent.locale`. If you add your own locale, provide consent strings under the `nuxtlibConsent` namespace.
+
+You can also override the module's bundled locales from the consuming app. For example, if your app already has `i18n/locales/en.ts`, `i18n/locales/de.ts`, or `i18n/locales/pl.ts`, you can replace some keys or the entire `nuxtlibConsent` namespace there.
+
+```ts
+// i18n/locales/en.ts
+export default {
+  nuxtlibConsent: {
+    title: 'Your custom title',
+    buttons: {
+      acceptAll: 'Your custom button label',
+    },
+  },
+}
+```
+
+```ts
+// i18n/locales/fr.ts
+export default {
+  nuxtlibConsent: {
+    title: 'Nous utilisons des cookies',
+    description: 'Nous utilisons des cookies et des technologies similaires pour faire fonctionner le site, mesurer son utilisation et, avec votre permission, personnaliser le contenu et la publicite.',
+    categories: {
+      analytics: {
+        label: 'Analytiques',
+        description: '...',
+      },
+      ads: {
+        label: 'Publicite / marketing',
+        description: '...',
+      },
+      personalization: {
+        label: 'Personnalisation',
+        description: '...',
+      },
+      functional: {
+        label: 'Fonctionnels (preferences)',
+        description: '...',
+      },
+    },
+    buttons: {
+      acceptAll: 'Tout accepter',
+      customize: 'Personnaliser',
+      hideSettings: 'Masquer les parametres',
+      save: 'Enregistrer les parametres',
+    },
+  },
+}
+```
+
+Notes:
+
+- You only need to provide the `nuxtlibConsent` namespace in app locale files.
+- The consuming app can override bundled `en`, `de`, and `pl` locales partially or completely by defining `nuxtlibConsent` in its own locale files.
+- If you override the full namespace for a locale, provide every key your UI needs.
+- If you override only part of the namespace, make sure your app i18n fallback config covers the remaining keys.
+- Without Nuxt i18n, only the bundled `en`, `de`, and `pl` locales are available.
+
 
 ## How to Configure Google Analytics
 
@@ -135,6 +269,9 @@ Tip:
 
 - `src/module.ts`: module wiring (runtime config, auto-imports, component registration, plugin injection).
 - `src/runtime/composables/useConsent.ts`: consent categories + cookie persistence rules.
+- `src/runtime/composables/useConsentI18n.ts`: consent text resolution with optional app i18n
+- `src/runtime/lang/en.ts`: bundled English consent copy
+- `src/runtime/lang/pl.ts`: bundled Polish consent copy
 - `src/runtime/composables/useIsRealUser.ts`: real-user interaction detection strategy.
 - `src/runtime/components/Consent.vue`: public integration component used in apps (`<Consent />`).
 - `src/runtime/components/ConsentModal.client.vue`: modal UI copy, buttons, and category controls.
@@ -161,15 +298,19 @@ Consent UI is unstyled:
 - Confirm Vite plugin `@tailwindcss/vite` is enabled.
 - Confirm your CSS imports `@nuxtlib/consent/tailwind`.
 
+Translations are not switching:
+
+- Confirm `@nuxtjs/i18n` is installed and enabled.
+- Put app overrides under the `nuxtlibConsent` namespace.
+- If you provide partial overrides, confirm your app i18n fallback config is active.
+
+
 GA consent updates missing:
 
 - Confirm `@nuxt/scripts` is installed and enabled.
 - Confirm `scripts.registry.googleAnalytics.id` is configured.
 
 ## Roadmap
-
-### Internalization
-Opt-in i18n support, but keep English defaults for non-i18n users.
 
 ### Opt out RealUsers only
 Add a module option to disable real-user gating when teams need immediate banner rendering for all visitors (for strict legal/compliance flows), while keeping current behavior as default. Planned output: one explicit config flag and documented behavior matrix.
@@ -179,3 +320,87 @@ Make GA sync disabled by default and introduce provider selection in module conf
 
 ### Opt in show decline all button
 Add a config flag to explicitly enable/disable a visible "Decline all" action in the modal so product/legal teams can align UI behavior with policy requirements. Planned output: UI config option plus accessibility and copy recommendations.
+
+## Usage Cases
+
+Use the saved consent state anywhere in your app through `useConsent()`.
+
+Only enable a feature after the required consent was granted:
+
+```vue
+<script setup lang="ts">
+const { consent } = useConsent()
+
+const canRunAnalyticsFeature = computed(() => consent.value.analytics)
+</script>
+
+<template>
+  <AnalyticsDashboard v-if="canRunAnalyticsFeature" />
+
+  <p v-else>
+    This feature is available only after analytics consent is accepted.
+  </p>
+</template>
+```
+
+Only initialize a third-party tool when consent changes to allowed:
+
+```ts
+const { consent } = useConsent()
+
+watch(
+  () => consent.value.functional,
+  (allowed) => {
+    if (!allowed || !import.meta.client) {
+      return
+    }
+
+    startSupportChat()
+  },
+  { immediate: true },
+)
+```
+
+Typical mappings in real apps:
+
+- `analytics`: analytics SDKs, heatmaps, product metrics, A/B testing tools
+- `ads`: ad pixels, retargeting scripts, conversion tracking
+- `personalization`: recommendation engines, personalized content, ad personalization
+- `functional`: support chat, saved UI preferences, embedded tools that are not strictly essential
+
+This pattern works well when some parts of the app should stay hidden, disabled, or not initialized until the user has explicitly granted the matching consent category.
+
+You can also use `<ConsentModal />` directly instead of `<CookiesConsent />` when you want full control over when the modal appears.
+
+That is useful when:
+
+- you do not want the built-in real-user gating from `<CookiesConsent />`
+- you want to control the backdrop, placement, transitions, or surrounding layout yourself
+
+Example:
+
+```vue
+<script setup lang="ts">
+const consentModalRef = ref<{ syncFromCookies: () => void } | null>(null)
+const showConsentModal = ref(false)
+
+function openConsentModal() {
+  consentModalRef.value?.syncFromCookies()
+  showConsentModal.value = true
+}
+</script>
+
+<template>
+  <button @click="openConsentModal()">
+    Privacy settings
+  </button>
+
+  <ConsentModal
+    v-if="showConsentModal"
+    ref="consentModalRef"
+    @decision-has-been-made="showConsentModal = false"
+  />
+</template>
+```
+
+`<CookiesConsent />` is still the recommended default because it already handles the first-visit flow, real-user detection, lazy rendering, and reopen behavior. If you use `<ConsentModal />` directly, you are responsible for deciding when to show it and when to hide it.

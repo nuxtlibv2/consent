@@ -42,18 +42,19 @@
     "dist"
   ],
   "workspaces": [
-    "playground"
+    "playgrounds/*"
   ],
   "scripts": {
     "prepack": "nuxt-module-build build",
-    "dev": "npm run dev:prepare && nuxt dev playground",
-    "dev:build": "nuxt build playground",
-    "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt prepare playground",
+    "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxt prepare playgrounds/without-i18n && nuxt prepare playgrounds/with-i18n",
+    "dev:no-i18n": "npm run dev:prepare && nuxt dev playgrounds/without-i18n --port 3001",
+    "dev:i18n": "npm run dev:prepare && nuxt dev playgrounds/with-i18n --port 3002",
+    "dev:build": "nuxt build playgrounds/without-i18n && nuxt build playgrounds/with-i18n",
     "release": "npm run lint && npm run test && npm run prepack && changelogen --release && npm publish && git push --follow-tags",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
+    "test:types": "vue-tsc --noEmit && cd playgrounds/without-i18n && vue-tsc --noEmit && cd ../with-i18n && vue-tsc --noEmit"
   },
   "dependencies": {
     "@nuxt/kit": "^4.3.1"
