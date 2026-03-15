@@ -5,7 +5,7 @@ For Nuxt teams that want free consent banner:
 - That only shows for real users after interaction signals
 - That persists consent cookies
 - With optional Nuxt i18n integration
-- With Google Analytics consent updates
+- With optional Google Analytics consent updates
 
 This module is optimized to stay lightweight in real apps:
 
@@ -19,6 +19,7 @@ Search terms: `nuxt cookie consent`, `gdpr banner nuxt`, `google consent mode`, 
 
 - [Quickstart](#quickstart)
 - [Public API](#public-api)
+- [Supported Integrations](#supported-integrations)
 - [Localization](#localization)
 - [How to Configure Google Analytics](#how-to-configure-google-analytics)
 - [Testing](#testing)
@@ -31,10 +32,13 @@ Search terms: `nuxt cookie consent`, `gdpr banner nuxt`, `google consent mode`, 
 
 Copy/paste minimal setup:
 
+This quick setup gives you the consent UI and cookie persistence only.
+Provider integrations such as Google Analytics are optional and must be enabled separately.
+
 Install dependencies:
 
 ```bash
-npm install -D @nuxtlib/consent @nuxt/scripts tailwindcss @tailwindcss/vite
+npm install -D @nuxtlib/consent tailwindcss @tailwindcss/vite
 ```
 
 `assets/css/main.css`:
@@ -50,20 +54,14 @@ npm install -D @nuxtlib/consent @nuxt/scripts tailwindcss @tailwindcss/vite
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
-  modules: ['@nuxtlib/consent', '@nuxt/scripts'],
+  modules: ['@nuxtlib/consent'],
   css: ['~/assets/css/main.css'],
   vite: { plugins: [tailwindcss()] },
-  scripts: {
-    registry: {
-      googleAnalytics: { id: 'G-XXXXXXXXXX' },
-    },
-  },
   nuxtlibConsent: {
     cookiePrefix: 'myapp_name', // cookie key namespace
     cookieSecure: true, // OPTIONAL, default true, set to false when you want to test on localhost
     cookieMaxAge: 60 * 60 * 24 * 365, // OPTIONAL - default 1 year, in seconds
     locale: 'pl', // used only when the app does not use Nuxt i18n - defaults to 'en'
-
   },
 })
 ```
@@ -89,9 +87,10 @@ What you should see:
 
 - The modal appears only after a real-user interaction such as click, touch, key press, scroll, wheel, or meaningful pointer movement.
 - Consent state is stored in `<prefix>_decided` and `<prefix>_consent`.
-- Google Analytics consent starts as denied and is updated from the saved consent state.
+- No provider integrations run unless you enable them explicitly.
 
 Use `cookieSecure: false` only for local HTTP testing. Keep `cookieSecure: true` in production HTTPS.
+If you want provider sync, see [Supported Integrations](#supported-integrations) and [How to Configure Google Analytics](#how-to-configure-google-analytics).
 
 
 ## Public API
@@ -126,6 +125,12 @@ Auto-imported composable that confirms real interaction before the consent UI is
 Current option:
 
 - `movementThresholdPx` with a default of `8`
+
+## Supported Integrations
+
+Current built-in integrations:
+
+- `googleAnalytics`: Google Analytics consent mode sync through `@nuxt/scripts`
 
 ## Localization
 
@@ -221,10 +226,27 @@ Notes:
 
 ## How to Configure Google Analytics
 
-GA sync is built into the module through `src/runtime/plugins/ga.client.ts`.
+GA sync is optional and is only loaded when you enable the integration explicitly.
 
-1. Add GA measurement ID in `scripts.registry.googleAnalytics.id`.
-2. Keep `@nuxt/scripts` and `@nuxtlib/consent` enabled in `modules`.
+```ts
+export default defineNuxtConfig({
+  modules: ['@nuxtlib/consent', '@nuxt/scripts'],
+  scripts: {
+    registry: {
+      googleAnalytics: { id: 'G-XXXXXXXXXX' },
+    },
+  },
+  nuxtlibConsent: {
+    integrations: {
+      googleAnalytics: true,
+    },
+  },
+})
+```
+
+1. Install and enable `@nuxt/scripts`.
+2. Add the GA measurement ID in `scripts.registry.googleAnalytics.id`.
+3. Enable `nuxtlibConsent.integrations.googleAnalytics`.
 
 Where to get the GA ID:
 
@@ -238,16 +260,19 @@ Behavior:
 - Watches consent cookie state.
 - Sends `gtag('consent', 'update', mappedState)` on changes.
 
+If `nuxtlibConsent.integrations.googleAnalytics` is not enabled, this plugin is not added to the app at all.
+
 For advanced script loading/configuration options, read the Nuxt Scripts docs: <https://scripts.nuxt.com/>.
 
 ## Testing
 
-Recommended test path for consent + GA behavior:
+Recommended test path:
 
 1. Open your app in a fresh session (incognito or cleared cookies).
 2. Trigger real interaction (click/scroll) and confirm banner appears.
 3. Choose consent options and verify cookies `<prefix>_decided` and `<prefix>_consent`.
-4. Verify analytics/debug behavior with one of these methods:
+4. Reopen settings through `toggleConsentVisibility()` and confirm the modal reflects the saved cookie state.
+5. If `integrations.googleAnalytics` is enabled, verify analytics/debug behavior with one of these methods:
 
 Method A: Google Tag Manager Preview / Tag Assistant (recommended when GTM is in your stack)
 
@@ -267,7 +292,8 @@ Tip:
 
 ## Project Customization Map
 
-- `src/module.ts`: module wiring (runtime config, auto-imports, component registration, plugin injection).
+- `src/module.ts`: module wiring (runtime config, auto-imports, component registration, and conditional plugin injection).
+- `src/integrations.ts`: supported integration registry and validation rules.
 - `src/runtime/composables/useConsent.ts`: consent categories + cookie persistence rules.
 - `src/runtime/composables/useConsentI18n.ts`: consent text resolution with optional app i18n
 - `src/runtime/lang/en.ts`: bundled English consent copy
@@ -276,7 +302,7 @@ Tip:
 - `src/runtime/components/Consent.vue`: public integration component used in apps (`<Consent />`).
 - `src/runtime/components/ConsentModal.client.vue`: modal UI copy, buttons, and category controls.
 - `src/runtime/components/BaseSwitch.vue`: switch control used in modal category toggles.
-- `src/runtime/plugins/ga.client.ts`: GA consent mapping and update calls.
+- `src/runtime/plugins/ga.client.ts`: optional GA consent mapping and update calls.
 - `src/runtime/tailwind.css`: Tailwind source export used via `@nuxtlib/consent/tailwind`.
 - `src/runtime/augments.app.d.ts`: type augmentation for `runtimeConfig.public.consent`.
 
@@ -307,6 +333,7 @@ Translations are not switching:
 
 GA consent updates missing:
 
+- Confirm `nuxtlibConsent.integrations.googleAnalytics` is enabled.
 - Confirm `@nuxt/scripts` is installed and enabled.
 - Confirm `scripts.registry.googleAnalytics.id` is configured.
 
@@ -315,8 +342,8 @@ GA consent updates missing:
 ### Opt out RealUsers only
 Add a module option to disable real-user gating when teams need immediate banner rendering for all visitors (for strict legal/compliance flows), while keeping current behavior as default. Planned output: one explicit config flag and documented behavior matrix.
 
-### GA plugin opt-in + multi-provider support
-Make GA sync disabled by default and introduce provider selection in module config so apps can choose GA, GTM-based flows, or other consent providers from a unified interface. Planned output: provider registry, per-provider docs, and migration notes.
+### More provider integrations
+Extend the integration registry beyond Google Analytics so teams can opt into additional consent targets through the same explicit `nuxtlibConsent.integrations` interface. Planned output: more provider plugins, docs, and migration notes.
 
 ### Opt in show decline all button
 Add a config flag to explicitly enable/disable a visible "Decline all" action in the modal so product/legal teams can align UI behavior with policy requirements. Planned output: UI config option plus accessibility and copy recommendations.

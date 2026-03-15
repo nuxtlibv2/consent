@@ -1,7 +1,8 @@
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
-  modules: ['@nuxtlib/consent', '@nuxt/scripts'],
+  modules: ['@nuxtlib/consent'],
+  // modules: ['@nuxtlib/consent', '@nuxt/scripts'],
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
   compatibilityDate: 'latest',
@@ -14,12 +15,15 @@ export default defineNuxtConfig({
     cookieSecure: false,
     cookieMaxAge: 60 * 60 * 24 * 365, // 1 year
     locale: 'pl',
+    // integrations: {
+    //   googleAnalytics: true,
+    // },
   },
-  scripts: {
-    registry: {
-      googleAnalytics: {
-        id: 'G-XXXXXXXXXX',
-      },
-    },
-  },
+  // scripts: {
+  //   registry: {
+  //     googleAnalytics: {
+  //       id: 'G-XXXXXXXXXX',
+  //     },
+  //   },
+  // },
 })

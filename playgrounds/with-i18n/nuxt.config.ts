@@ -32,6 +32,9 @@ export default defineNuxtConfig({
     cookieSecure: false,
     cookieMaxAge: 60 * 60 * 24 * 365, // 1 year
     locale: 'en',
+    integrations: {
+      googleAnalytics: true,
+    },
   },
   scripts: {
     registry: {

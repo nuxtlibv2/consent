@@ -1,5 +1,6 @@
 import { defineNuxtModule, addPlugin, createResolver, addImports, addComponent } from '@nuxt/kit'
 import type { Nuxt, PublicRuntimeConfig } from 'nuxt/schema'
+import { consentIntegrationRegistry, resolveConsentIntegrations, type ConsentIntegrationsOptions } from './integrations'
 
 // Module options TypeScript interface definition
 export interface ModuleOptions {
@@ -7,6 +8,7 @@ export interface ModuleOptions {
   cookieSecure?: boolean
   cookieMaxAge?: number
   locale?: 'en' | 'pl' | 'de'
+  integrations?: ConsentIntegrationsOptions
 }
 
 type RegisterI18nModule = (options: {
@@ -29,6 +31,7 @@ export default defineNuxtModule<ModuleOptions>({
 
   moduleDependencies: {
     '@nuxt/scripts': {
+      optional: true,
       version: '>=0.12.0',
     },
     '@nuxtjs/i18n': {
@@ -45,6 +48,7 @@ export default defineNuxtModule<ModuleOptions>({
   setup(_options, _nuxt) {
     const resolver = createResolver(import.meta.url)
     const nuxt = _nuxt as NuxtWithOptionalI18nHook
+    const enabledIntegrations = resolveConsentIntegrations(_options.integrations)
 
     // WHAT: Registers this module's bundled consent translation files with Nuxt i18n.
     // WHY: When an app already uses Nuxt i18n, the consent UI should plug into that system instead of inventing its own.
@@ -77,8 +81,11 @@ export default defineNuxtModule<ModuleOptions>({
       locale: _options.locale,
     }
 
-    // Google Analytics plugin (client-only)
-    addPlugin(resolver.resolve('./runtime/plugins/ga.client'))
+    for (const integrationName of enabledIntegrations) {
+      const integration = consentIntegrationRegistry[integrationName]
+      integration.validate(_nuxt)
+      addPlugin(resolver.resolve(integration.plugin))
+    }
 
     // Consent composable
     addImports({

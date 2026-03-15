@@ -1,7 +1,7 @@
 {
   "name": "@nuxtlib/consent",
   "version": "1.0.1",
-  "description": "Nuxt cookie consent module with composable, banner, and provider sync helpers",
+  "description": "Nuxt cookie consent module with composable, banner, and optional provider sync helpers",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxtlibv2/consent.git"
@@ -63,6 +63,11 @@
     "@nuxt/scripts": ">=0.12.0",
     "tailwindcss": "^4",
     "@tailwindcss/vite": "^4"
+  },
+  "peerDependenciesMeta": {
+    "@nuxt/scripts": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@nuxt/devtools": "^3.2.1",
