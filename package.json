@@ -1,6 +1,6 @@
 {
   "name": "@nuxtlib/consent",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Nuxt cookie consent module with composable, banner, and optional provider sync helpers",
   "repository": {
     "type": "git",
