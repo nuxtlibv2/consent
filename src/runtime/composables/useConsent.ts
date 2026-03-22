@@ -35,25 +35,38 @@ export function useConsent(): UseConsentReturn {
     maxAge,
   }
 
+  function defaultConsent(): ConsentOptions {
+    return {
+      // essential is implied true (not user-toggleable)
+      analytics: false,
+      ads: false,
+      personalization: false,
+      functional: false,
+    }
+  }
+
+  // On the server we still want normalized default values for reads, but those
+  // defaults must not be persisted during SSR finalization.
+  function useConsentCookie<T>(name: string, defaultValue: () => T): CookieRef<T> {
+    if (import.meta.server) {
+      return useCookie<T>(name, {
+        ...cookieOptions,
+        default: defaultValue,
+        readonly: true,
+      }) as CookieRef<T>
+    }
+
+    return useCookie<T>(name, {
+      ...cookieOptions,
+      default: defaultValue,
+    })
+  }
+
   // Decision flag: has the user chosen?
-  const decided = useCookie<boolean>(prefix + '_decided', {
-    ...cookieOptions,
-    default: function (): boolean { return false },
-  })
+  const decided = useConsentCookie<boolean>(prefix + '_decided', () => false)
 
   // Normalized consent categories
-  const consent = useCookie<ConsentOptions>(prefix + '_consent', {
-    ...cookieOptions,
-    default: function (): ConsentOptions {
-      return {
-        // essential is implied true (not user-toggleable)
-        analytics: false,
-        ads: false,
-        personalization: false,
-        functional: false,
-      }
-    },
-  })
+  const consent = useConsentCookie<ConsentOptions>(prefix + '_consent', defaultConsent)
 
   // Domain actions (no provider logic here)
   function setConsent(patch: Partial<ConsentOptions>) {

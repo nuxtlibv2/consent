@@ -10,7 +10,7 @@ For Nuxt teams that want free consent banner:
 This module is optimized to stay lightweight in real apps:
 
 - Consent UI is shown only for real users after interaction signals (click, touch, key, scroll, pointer movement threshold).
-- The dialog is lazy-rendered through `<CookiesConsent />`, so modal UI is not eagerly mounted for bots/crawlers or non-interactive traffic.
+- The dialog is lazy-rendered through `<CookiesConsent />`, and that public wrapper is registered client-only by the module.
 - Interaction listeners are cleaned up after the user is confirmed as real, avoiding long-lived event overhead.
 
 Search terms: `nuxt cookie consent`, `gdpr banner nuxt`, `google consent mode`, `nuxt scripts consent`, `tailwind v4 nuxt module`.
@@ -89,6 +89,11 @@ What you should see:
 - Consent state is stored in `<prefix>_decided` and `<prefix>_consent`.
 - No provider integrations run unless you enable them explicitly.
 
+Notes:
+
+- You do not need to wrap `<CookiesConsent />` in `<ClientOnly>`. The module already registers it as client-only.
+- `useConsent()` is SSR-safe. When consent cookies are missing, server renders use fallback values without writing default consent cookies during SSR.
+
 Use `cookieSecure: false` only for local HTTP testing. Keep `cookieSecure: true` in production HTTPS.
 If you want provider sync, see [Supported Integrations](#supported-integrations) and [How to Configure Google Analytics](#how-to-configure-google-analytics).
 
@@ -103,6 +108,11 @@ Mount this once near the app root. The component exposes:
 - `enableBackground`: adds a dark blurred backdrop behind the modal when `true`
 - `toggleConsentVisibility()` to manually reopen or close the consent modal.
 
+Implementation notes:
+
+- The module registers `<CookiesConsent />` as client-only, so consumers do not need an extra `<ClientOnly>` wrapper.
+- This keeps the consent UI out of SSR while preserving the same public component API.
+
 Example:
 
 ```vue
@@ -116,11 +126,16 @@ Example:
 
 Auto-imported composable for consent state and actions:
 
-- `consent`: cookie-backed category state
-- `decided`: cookie-backed first-decision flag
+- `consent`: consent category state backed by cookies when present
+- `decided`: first-decision flag backed by cookies when present
 - `setConsent(patch)`: partial update for one or more categories
 - `acceptAll()`: enables all categories
 - `declineAll()`: disables all categories
+
+SSR behavior:
+
+- When consent cookies are missing, `useConsent()` returns normalized fallback values during SSR.
+- Those fallback values are not written back as `Set-Cookie` headers during server render finalization.
 
 Current consent categories:
 
@@ -310,19 +325,29 @@ Tip:
 - `src/runtime/lang/en.ts`: bundled English consent copy
 - `src/runtime/lang/pl.ts`: bundled Polish consent copy
 - `src/runtime/composables/useIsRealUser.ts`: real-user interaction detection strategy.
-- `src/runtime/components/Consent.vue`: public integration component used in apps (`<Consent />`).
+- `src/runtime/components/CookiesConsent.vue`: public wrapper component used in apps (`<CookiesConsent />`).
 - `src/runtime/components/ConsentModal.client.vue`: modal UI copy, buttons, and category controls.
 - `src/runtime/components/BaseSwitch.vue`: switch control used in modal category toggles.
 - `src/runtime/plugins/ga.client.ts`: optional GA consent mapping and update calls.
 - `src/runtime/tailwind.css`: Tailwind source export used via `@nuxtlib/consent/tailwind`.
-- `src/runtime/augments.app.d.ts`: type augmentation for `runtimeConfig.public.consent`.
+- `src/runtime/augments.app.d.ts`: type augmentation for `runtimeConfig.public.nuxtlibConsent`.
 
 ## Troubleshooting
 
 Consent banner never appears:
 
-- Confirm you mounted `<Consent />`.
+- Confirm you mounted `<CookiesConsent />`.
 - Interact with the page first (click/scroll/key/touch); wrapper waits for a real-user signal.
+
+Do I need `<ClientOnly>`?
+
+- No. The module already registers `<CookiesConsent />` as client-only.
+- You only need `ClientOnly` if you are wrapping your own custom consent UI outside the shipped component.
+
+Seeing SSR / SWR header-write errors:
+
+- Update to a version that includes the SSR-safe `useConsent()` change.
+- The module now reads fallback consent state during SSR without emitting default `Set-Cookie` headers.
 
 Cookies not persisting on localhost:
 

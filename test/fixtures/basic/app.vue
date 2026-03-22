@@ -1,6 +1,4 @@
 <template>
   <div>basic</div>
+  <CookiesConsent />
 </template>
-
-<script setup>
-</script>
