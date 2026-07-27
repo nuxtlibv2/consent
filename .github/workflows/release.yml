@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # WHAT: Runs the same lint/test/build checks as ci.yml, against main, before touching npm at all.
+  # WHY: Guarantees that if this workflow fails past this point, the failure is unambiguously about
+  #      publishing itself - never about the code not building/passing tests, since that was already proven here.
+  verify:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/verify.yml
+
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm i -g --force corepack@latest && corepack enable
+
+      - name: Install dependencies
+        run: npx nypm@latest i
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # WHAT: Bumps package.json's version and CHANGELOG.md based on conventional commits since the last tag.
+      # WHY: Something has to decide the next version number. Doing it in the same manual run as the publish
+      #      means clicking one button both versions and publishes, instead of a separate release-PR merge first.
+      # HOW: changelogen inspects commit messages (fix:/feat:/etc.) since the last release and bumps semver
+      #      accordingly, committing the change directly. `--no-tag`: we tag only after a successful publish below.
+      - name: Bump version and changelog
+        run: npx changelogen@latest --release --no-tag
+
+      # WHAT: Pushes the version bump commit straight to main.
+      # WHY: This workflow is manually triggered by a maintainer on purpose - the version bump doesn't need
+      #      its own PR/review cycle. If nothing was releasable, changelogen makes no commit and this is a no-op.
+      - name: Push version bump
+        run: git push origin main
+
+      # WHAT: Checks whether package.json's current version is already live on npm.
+      # WHY: Makes re-running this workflow after a previous failed publish safe - it won't error out or
+      #      try to re-bump a version that's already bumped-but-unpublished, and skips cleanly if already published.
+      # HOW: Asks the npm registry directly for `<name>@<version>`; a non-zero exit means it's unpublished.
+      - name: Check whether this version is already published
+        id: check
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          echo "name=$PKG_NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+          if npm view "$PKG_NAME@$PKG_VERSION" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # WHAT: Generates `.nuxt/tsconfig.json`, which the real build below resolves its own tsconfig against.
+      # WHY: `nuxt-module-build build` fails with "Cannot find module './.nuxt/tsconfig.json'" if this hasn't
+      #      been generated first - `dev:prepare`/the `verify` job do this via `nuxt-module-build prepare`,
+      #      but this job builds standalone, so it needs the same step explicitly.
+      - name: Generate module types
+        if: steps.check.outputs.published == 'false'
+        run: npx nuxt-module-build prepare
+
+      # WHAT: Upgrades the npm CLI itself to the latest version.
+      # WHY: npm's OIDC trusted publishing (no NODE_AUTH_TOKEN needed) requires npm >=11.5.1. The npm bundled
+      #      with actions/setup-node's Node version is often older and silently falls back to an unauthenticated
+      #      publish, which the registry reports as a confusing 404 instead of a clear auth error.
+      - name: Upgrade npm
+        if: steps.check.outputs.published == 'false'
+        run: npm install -g npm@latest
+
+      - name: Build
+        if: steps.check.outputs.published == 'false'
+        run: npm run prepack
+
+      - name: Publish
+        if: steps.check.outputs.published == 'false'
+        run: npm publish
+
+      # WHAT: Creates and pushes a `vX.Y.Z` git tag matching the version just published.
+      # WHY: Tags aren't needed to trigger anything - they're a permanent, immutable record of exactly which
+      #      commit shipped as a given release (git history, GitHub Releases, bisecting).
+      # HOW: Only runs after `npm publish` succeeds, so a tag never exists for a version that failed to publish.
+      - name: Tag release
+        if: steps.check.outputs.published == 'false'
+        run: |
+          git tag "v${{ steps.check.outputs.version }}"
+          git push origin "v${{ steps.check.outputs.version }}"
