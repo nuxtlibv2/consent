@@ -49,6 +49,14 @@ jobs:
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # WHAT: Generates `.nuxt/tsconfig.json`, which the real build below resolves its own tsconfig against.
+      # WHY: `nuxt-module-build build` fails with "Cannot find module './.nuxt/tsconfig.json'" if this hasn't
+      #      been generated first - `dev:prepare`/the `verify` job do this via `nuxt-module-build prepare`,
+      #      but this job builds standalone, so it needs the same step explicitly.
+      - name: Generate module types
+        if: steps.check.outputs.published == 'false'
+        run: npx nuxt-module-build prepare
+
       - name: Build
         if: steps.check.outputs.published == 'false'
         run: npm run prepack
