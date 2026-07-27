@@ -31,6 +31,14 @@ jobs:
       - name: Install dependencies
         run: npx nypm@latest i
 
+      # WHAT: Upgrades the npm CLI itself to the latest version.
+      # WHY: npm's OIDC trusted publishing (no NODE_AUTH_TOKEN needed) requires npm >=11.5.1. The npm bundled
+      #      with actions/setup-node's Node 20 is older and silently falls back to an unauthenticated publish,
+      #      which the registry reports as a confusing 404 instead of a clear auth error.
+      # HOW: Installs npm@latest globally, replacing the one that shipped with this Node version.
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
       # WHAT: Checks whether package.json's current version is already live on npm.
       # WHY: main gets a push on every merged PR, not just release ones - this makes the job a safe no-op for
       #      ordinary merges, and idempotent/self-healing if a previous publish attempt failed partway through
