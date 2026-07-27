@@ -1,6 +1,15 @@
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { defineNuxtModule, addPlugin, createResolver, addImports, addComponent } from '@nuxt/kit'
 import type { Nuxt, PublicRuntimeConfig } from 'nuxt/schema'
 import { consentIntegrationRegistry, resolveConsentIntegrations, type ConsentIntegrationsOptions } from './integrations'
+
+// WHAT: The file extension the bundled lang files actually have, in priority order.
+// WHY: In a real published package `dist/runtime/lang` only contains compiled `.js`, but in local/stub dev builds
+//      (`nuxt-module-build build --stub`) the original `.ts` sources are what's on disk instead. Hardcoding either
+//      one breaks the other mode with an `ENOENT` as soon as `@nuxtjs/i18n` tries to load the registered file.
+// HOW: `resolveLangFile` below tries each extension in this order and returns the first one found on disk.
+const LANG_FILE_EXTENSIONS = ['ts', 'js', 'mjs'] as const
 
 // Module options TypeScript interface definition
 export interface ModuleOptions {
@@ -21,6 +30,21 @@ type RegisterI18nModule = (options: {
 
 type NuxtWithOptionalI18nHook = Nuxt & {
   hook: (name: 'i18n:registerModule', callback: (register: RegisterI18nModule) => void) => void
+}
+
+// WHAT: Finds the real on-disk filename for a bundled lang file (e.g. `en`), instead of assuming its extension.
+// WHY: Whichever extension this module actually ships with for a given build can change (stub dev build vs. a
+//      real `nuxt-module-build build`), and Nuxt i18n needs the exact existing filename to resolve it without crashing.
+// HOW: It checks `langDir` for `<code>.ts`, then `.js`, then `.mjs` and returns the first match; if somehow none
+//      exist it falls back to `.js`, the extension a real published build produces, so behavior stays predictable.
+function resolveLangFile(langDir: string, code: string): string {
+  for (const ext of LANG_FILE_EXTENSIONS) {
+    const file = `${code}.${ext}`
+    if (existsSync(join(langDir, file))) {
+      return file
+    }
+  }
+  return `${code}.js`
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -52,22 +76,24 @@ export default defineNuxtModule<ModuleOptions>({
 
     // WHAT: Registers this module's bundled consent translation files with Nuxt i18n.
     // WHY: When an app already uses Nuxt i18n, the consent UI should plug into that system instead of inventing its own.
-    // HOW: It hooks into `i18n:registerModule` and tells Nuxt i18n where this module keeps its bundled translation files.
+    // HOW: It hooks into `i18n:registerModule` and tells Nuxt i18n where this module keeps its bundled translation
+    //      files, resolving each file's real extension on disk (see `resolveLangFile`) rather than assuming one.
     nuxt.hook('i18n:registerModule', (register) => {
+      const langDir = resolver.resolve('./runtime/lang')
       register({
-        langDir: resolver.resolve('./runtime/lang'),
+        langDir,
         locales: [
           {
             code: 'en',
-            file: 'en.ts',
+            file: resolveLangFile(langDir, 'en'),
           },
           {
             code: 'de',
-            file: 'de.ts',
+            file: resolveLangFile(langDir, 'de'),
           },
           {
             code: 'pl',
-            file: 'pl.ts',
+            file: resolveLangFile(langDir, 'pl'),
           },
         ],
       })

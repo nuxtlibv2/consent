@@ -1,0 +1,70 @@
+name: verify
+
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - run: npm i -g --force corepack@latest && corepack enable
+
+      - name: Install dependencies
+        run: npx nypm@latest i
+
+      - name: Lint
+        run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - run: npm i -g --force corepack@latest && corepack enable
+
+      - name: Install dependencies
+        run: npx nypm@latest i
+
+      - name: Playground prepare
+        run: npm run dev:prepare
+
+      - name: Test
+        run: npm run test
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - run: npm i -g --force corepack@latest && corepack enable
+
+      - name: Install dependencies
+        run: npx nypm@latest i
+
+      - name: Generate module types
+        run: npx nuxt-module-build prepare
+
+      # WHAT: Builds the module the same way `prepack` does before a real npm publish.
+      # WHY: A stub build (used by `dev:prepare`) still resolves against `src/*.ts`, so it can hide bugs that
+      #      only exist in the real compiled `dist/` output (e.g. registering a locale file extension that the
+      #      real build never emits). This job catches that class of bug on every PR, before it ever reaches main.
+      # HOW: Runs the actual `nuxt-module-build build` used by `prepack`/`publish.yml` and fails the job on error.
+      - name: Build module (real, non-stub)
+        run: npm run prepack
