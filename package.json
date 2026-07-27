@@ -1,6 +1,7 @@
 {
   "name": "@nuxtlib/consent",
   "version": "1.0.4",
+  "packageManager": "pnpm@10.28.1",
   "description": "Nuxt cookie consent module with composable, banner, and optional provider sync helpers",
   "repository": {
     "type": "git",
@@ -50,7 +51,6 @@
     "dev:no-i18n": "npm run dev:prepare && nuxt dev playgrounds/without-i18n --port 3001",
     "dev:i18n": "npm run dev:prepare && nuxt dev playgrounds/with-i18n --port 3002",
     "dev:build": "nuxt build playgrounds/without-i18n && nuxt build playgrounds/with-i18n",
-    "release": "npm run lint && npm run test && npm run prepack && changelogen --release && npm publish && git push --follow-tags",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest watch",
